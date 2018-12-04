@@ -5,6 +5,7 @@ import time
 import datetime
 import filetype
 
+
 def mkdir(path):
     if os.path.exists(path):
         return u'目录存在'
@@ -44,6 +45,7 @@ def get_dir_size(dir_path):
     return size_sum
 
 
+# 将时间戳转换成字符串日期格式
 def timestamp_datetime(timestamp):
     return datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S.%f")
 
@@ -61,4 +63,8 @@ def get_file_type(file_path):
     else:
         return "file"
 
+
+def get_error_msg(error_code=""):
+    error_msg = {"status": "ERROR", "errMsg": error_code, "content": ""}
+    return error_msg
 

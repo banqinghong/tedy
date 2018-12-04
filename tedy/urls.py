@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^web/file/list$', pan_views.file_list, name='file_list'),
     url(r'^web/file/upload$', pan_views.file_upload, name='file_upload'),
     url(r'^web/file/test$', pan_views.test, name='file_test'),
+    url(r'^web/file/newDir$', pan_views.file_new_dir, name='file_new_dir'),
+    url(r'^web/file/reName$', pan_views.file_re_name, name='file_re_name'),
 ]
 
 handler403 = pan_views.error_page_403

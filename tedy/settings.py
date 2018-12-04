@@ -122,6 +122,11 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs', 'sys.log'),
             'formatter': 'verbose'
         },
+        'console':{
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
         # 'error': {
         #     'level': 'ERROR',
         #     'class': 'logging.handlers.RotatingFileHandler',
@@ -141,7 +146,8 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['sys', ],
+            # 'handlers': ['sys', ],
+            'handlers': ['console', ],
             'level': 'INFO',
             'propagate': True,
         },
