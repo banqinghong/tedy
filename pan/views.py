@@ -2,14 +2,16 @@ from django.shortcuts import render
 from pan.models import TedyUser, FileInfo
 from django.http import HttpResponse, StreamingHttpResponse, FileResponse, JsonResponse
 import json
+import shutil
 import time
 import logging
 import django.utils.log
 import logging.handlers
 from pan.common import *
-from tedy.settings import FILE_STORE_PATH, TOTAL_CAP
+from tedy.settings import FILE_STORE_PATH, TOTAL_CAP, FILE_DELETED_PATH
 
 mkdir(FILE_STORE_PATH)
+mkdir(FILE_DELETED_PATH)
 logger = logging.getLogger("tedy.pan.views")
 # Create your views here.
 
@@ -148,5 +150,59 @@ def file_re_name(request):
         logger.info(get_error_msg("目标文件已存在"))
         return JsonResponse(get_error_msg("目标文件已存在"))
     response_msg = {"status": "OK", "errMsg": "", "content": ""}
+    return JsonResponse(response_msg)
+
+
+def file_delete(request):
+    rev_json = json.loads(request.body)
+    user_id = rev_json["user_id"]
+    path = rev_json["fileDir"]
+    delete_file = rev_json["deleteFile"]
+    now_time = delete_file + "_" + str(int(time.time()))
+    phone = TedyUser.objects.get(id=user_id).phone
+    delete_path = os.path.join(FILE_STORE_PATH, phone, path, delete_file)
+    deleted_path = os.path.join(FILE_DELETED_PATH, phone, now_time)
+    logger.info({"path": delete_path})
+    try:
+        # 删除文件或者目录
+        shutil.move(delete_path, deleted_path)
+        logger.info({"msg": "文件删除成功"})
+    except FileNotFoundError:
+        logger.info(get_error_msg("源文件不存在"))
+        return JsonResponse(get_error_msg("源文件不存在"))
+    response_msg = {"status": "OK", "errMsg": "", "content": ""}
+    return JsonResponse(response_msg)
+
+
+def file_capacity(request):
+    rev_json = json.loads(request.body)
+    user_id = rev_json["user_id"]
+    phone = TedyUser.objects.get(id=user_id).phone
+    dir_path = os.path.join(FILE_STORE_PATH, phone)
+    dir_cap = get_best_size(get_dir_size(dir_path))
+    total_cap = get_best_size(TOTAL_CAP)
+    cap_dict = {"usedCap": dir_cap, "totalCap": total_cap}
+    response_msg = {"status": "OK", "errMsg": "", "content": cap_dict}
+    return JsonResponse(response_msg)
+
+
+def file_find(request):
+    rev_json = json.loads(request.body)
+    user_id = rev_json["user_id"]
+    phone = TedyUser.objects.get(id=user_id).phone
+    file_name = rev_json["fileName"]
+    dir_path = os.path.join(FILE_STORE_PATH, phone)
+    os.chdir(dir_path)
+    return_file_list = []
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if file_name in file:
+                f_path = os.path.join(root, file)
+                f_size = get_best_size(os.path.getsize(f_path))
+                m_time = int(os.path.getmtime(f_path))
+                f_type = get_file_type(f_path)
+                file_info = {"fileName": file, "fileDir": root, "modifyTime": m_time, "size": f_size, "type": f_type}
+                return_file_list.append(file_info)
+    response_msg = {"status": "OK", "errMsg": "", "content": return_file_list}
     return JsonResponse(response_msg)
 

@@ -179,5 +179,6 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 FILE_STORE_PATH = os.path.join(BASE_DIR, 'media')
+FILE_DELETED_PATH = os.path.join(BASE_DIR, 'deleted')
 
-TOTAL_CAP = 304857600
+TOTAL_CAP = 21474836480
